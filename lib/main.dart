@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 
+import 'datetime.dart';
 void main() {
   runApp(MyApp());
 }
@@ -36,12 +37,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
 
-  
+  //variables for top app bar
   
   bool stockRecord=true;
   bool history=false;
   bool addnew=false;
 
+  //variables for data to to stored
   String name='';
   String price='';
   String discountedPrice='';
@@ -49,36 +51,67 @@ class _HomePageState extends State<HomePage> {
   String stockUnits='';
   String category='';
   String description='';
-
+  
+  //for list of Inventory
   List inventoryList=[];
+  
+  //for keeping track of History
+  List historyList=[
+    {
+                      'Name':"one week",
+                      'Price':"Cant Buy",
+                      'Discounted Price' :"Use",
+                      'Quantity':"Single ",
+                      'Units':"Single ",
+                      'Category': "Dont know",
+                      'Description':"Too Long",
+                      'Date Stamp': (DateTime.now()).subtract(Duration(days: 7)),
+                    },
+                    {
+                      'Name':"one month",
+                      'Price':"Cant Buy",
+                      'Discounted Price' :"Use",
+                      'Quantity':"Single ",
+                      'Units':"Single ",
+                      'Category': "Dont know",
+                      'Description':"Too Long",
+                      'Date Stamp': DateTime(now.year,now.month-1,now.day),
+                    },
 
-  List historyList=[];
+                    {
+                      'Name':"one year",
+                      'Price':"Cant Buy",
+                      'Discounted Price' :"Use",
+                      'Quantity':"Single ",
+                      'Units':"Single ",
+                      'Category': "Dont know",
+                      'Description':"Too Long",
+                      'Date Stamp': DateTime(now.year-1,now.month,now.day),
+                    }
+  ];
 
+  
+  //to store the index of item to be updated using popup menu
   int updateIndex=-10000;
 
   bool update=false;
-  // final myController =TextEditingController();
-
-  // late final  ScrollController _scrollController;
-
+  
+  //for the search operation in Inventory list 
   bool _isSearching=false;
   String searchText='';
   List searchList=[];
   
-  // @override
-  // void initState(){
-  //   super.initState();
-  //   _scrollController=new ScrollController();
-  // }
-  // @override
-  // void dispose(){
-  //   // myController.dispose();
-  //   _scrollController.dispose();
 
-  //   super.dispose();
-  // }
+  // for implementing filter the list of history
+  bool filter=false;
+  List filterList=[];
+  String _selectedFilter='';
+
+
   @override
   Widget build(BuildContext context) {
+
+  // heart of the search functionality
     
     searchFunction(searchText){
       for (int i=0;i<inventoryList.length;i++){
@@ -87,34 +120,84 @@ class _HomePageState extends State<HomePage> {
         searchText=searchText.toLowerCase();
         if(data.contains(searchText)){
           searchList.add(inventoryList[i]);
-          print(searchList);
           print(inventoryList);
 
         }
-        // setState(() {
-        //   _isSearching=false;
-        // });
-        // searchText='';
+        
       }
-    
-    
-  }
+    }
+
+  //heart of the filter functionality
+
+    filterFunction(value){
+      // print("filterval $value");
+      var now = new DateTime.now();
+      var past_1w = now.subtract(Duration(days: 7)); 
+      var past_1m = new DateTime(now.year, now.month-1, now.day);
+      var past_1y = new DateTime(now.year-1, now.month, now.day);
+
+      for (int i=0;i<historyList.length;i++){
+          var date=historyList[i]['Date Stamp'];
+          if (value=="Last Week"){
+            if  (past_1w.isBefore(date)){
+            filterList.add(historyList[i]);
+          }
+          }else if (value=="Last Month"){
+            if  (past_1m.isBefore(date)){
+            filterList.add(historyList[i]);
+          }
+          
+          }else if(value=="Last Year"){
+            if  (past_1y.isBefore(date)){
+                filterList.add(historyList[i]);
+      }
+    }}}
+
+    //declaring variable for using MediaQuery
     var size=MediaQuery.of(context).size;
-    // print("name = $name");
-    // print("price = $price");
-    // print("discounted = $discountedPrice");
-    // print("quantity = $quantity");
-    // print("stocks= $stockUnits");
-    // print("category= $category");
-    // print("description= $description");
+    
     return Scaffold(
-      appBar: AppBar(
+      appBar: history?AppBar(
         title: Center(
           child: Text(
             "Inventory")
             ),
-          
-      ),
+          actions: [
+            
+            
+            PopupMenuButton(
+              
+              icon: Icon(Icons.sort),
+              itemBuilder: (context){
+              List sortOptions=['None','Last Month','Last Week','Last Year'];
+              return List.generate(4, (index) {
+                return PopupMenuItem(
+                  value: sortOptions[index],
+                  child: Text(sortOptions[index]),
+                  );
+              });
+            },
+            onSelected: (value) {
+              print(value);
+              if (value!="None"){
+                   setState(() {
+                  filterList=[];
+                _selectedFilter=value.toString();
+                filter=true;
+                filterFunction(_selectedFilter);
+              });
+              }else{
+
+                setState(() {
+                  filter=false;
+                });;
+
+              }
+             
+            },
+            ),
+          ],
+      ): AppBar(title: Center(child: Text("Inventory"),),),
 
       body: Container(
             height: size.height,
@@ -238,6 +321,7 @@ class _HomePageState extends State<HomePage> {
                 ): Container(),
                 history? Flexible(
                   child: Container(
+                    
                     color:Colors.amberAccent,
                     width: size.width*0.9,
                     height: size.height*0.9,
@@ -463,8 +547,8 @@ Widget StockRecord(context){
                             )),
                         ),
                         onTap: (){
-                      var date=((DateTime.now().toIso8601String()).split("T"))[0];
-                      date=date.toString();
+                      // var date=((DateTime.now().toIso8601String()).split("T"))[0];
+                      // date=date.toString();
                           historyList.add(
                           {
                             'Name':inventoryList[updateIndex]['Name'],
@@ -474,7 +558,7 @@ Widget StockRecord(context){
                             'Units':inventoryList[updateIndex]['Units'],
                             'Category': inventoryList[updateIndex]['Category'],
                             'Description':inventoryList[updateIndex]['Description'],
-                            'Date Stamp': date,
+                            'Date Stamp': DateTime.now(),
                           }
                           );
                           setState(() {
@@ -728,13 +812,10 @@ Widget History(context){
   var size=MediaQuery.of(context).size;
   return Scaffold(
         
-        body:  Column(
-          children: [
+        body:! filter?  Container(
 
-            Container(
-              
-            ),
-            historyList.length>0 ? ListView.builder(
+            
+          child:  historyList.length>0 ? ListView.builder(
               itemCount: historyList.length,
               itemBuilder: (context,index){
 
@@ -802,7 +883,8 @@ Widget History(context){
                           Container(
                             margin: EdgeInsets.only(top:2,left: size.width*0.04),
                             child: Text(
-                              "Updated On  "+ historyList[index]['Date Stamp'],
+                              "Updated On  "+ historyList[index]['Date Stamp'].toString(),
+                              // "uPdated",
                               style: TextStyle(
                                 // fontWeight: FontWeight.bold,
                                 fontSize: 20,
@@ -817,13 +899,123 @@ Widget History(context){
                   ),
                 );
 
-              }):Container(child: Center(child: Text("No History"),),),
-          ],
-        ),
+              }):Container(
+                // width: size.width*0.5,
+                //     height: size.height*0.5,
+                child: Center(
+                  child: Text(
+                    "No History"
+                    ),),),
+          
         
 
+  ):
+
+
+
+  Container(
+
+            
+          child:  historyList.length>0 ? ListView.builder(
+              itemCount: filterList.length,
+              itemBuilder: (context,index){
+
+                return Container(
+                  width:size.width*0.2,
+                  height: size.height*0.15,
+                  decoration: BoxDecoration(
+                    color: Colors.black38,
+                    borderRadius: BorderRadius.circular(30),
+                    
+                  ),
+                  margin:EdgeInsets.only(top: 20,bottom:20),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(top:10,left: 30),
+                            child: Text(
+                              filterList[index]['Name'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 40,
+                              ),
+
+                            ),
+                          ),
+                          
+                        ],
+                      ),
+                      
+                      SizedBox(
+                        height: size.height*0.01,
+                      ),
+                         
+                          Row(
+                            children:[
+                              Container(
+                            margin: EdgeInsets.only(top:2,left: size.width*0.05),
+                            child: Text(
+                              "Units",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30,
+                              ),
+
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.only(top:10,left: size.width*0.5),
+                            child: Text(
+                              filterList[index]['Units'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30,
+                              ),
+
+                            ),
+                          ),
+                            ],
+                          ),
+
+                      Row(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(top:2,left: size.width*0.04),
+                            child: Text(
+                              "Updated On  "+ filterList[index]['Date Stamp'].toString(),
+                              // "uPdated",
+                              style: TextStyle(
+                                // fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+
+                            ),
+                          ),
+                        ],
+                      ),
+                          
+                    ],
+                  ),
+                );
+
+              }):Container(
+                // width: size.width*0.5,
+                //     height: size.height*0.5,
+                child: Center(
+                  child: Text(
+                    "No History"
+                    ),),),
+          
+        
+
+  ),
+
   );
-}
+  
+  
+  }
 
 
 
@@ -994,9 +1186,11 @@ Widget AddNew(context){
                 onTap: (){
                   // print(myController.text);
                   if (name.length>0 && price.length>0 && quantity.length>0 && stockUnits.length>0 && category.length>0){
-                  var date=((DateTime.now().toIso8601String()).split("T"))[0];
-                  date=date.toString();
+                  // var date=((DateTime.now().toIso8601String()).split("T"))[0];
+                  // var date=DateTime.now();
+                  // date=date.toString();
                    setState(() {
+                     filter=false;
                   inventoryList.add(
                     {
                       'Name':name,
@@ -1019,7 +1213,7 @@ Widget AddNew(context){
                       'Units':stockUnits,
                       'Category': category,
                       'Description':description,
-                      'Date Stamp': date,
+                      'Date Stamp': DateTime.now(),
                     })/*:Container()*/;
 
                   // name.length>0 && price.length>0 && quantity.length>0 && stockUnits.length>0 && category.length>0?
