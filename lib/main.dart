@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
 
       home: HomePage(),
       debugShowCheckedModeBanner: false,
+      // scrollBehavior: ,
     );
   }
 }
@@ -36,7 +37,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-
+  final _controller=TextEditingController();
   //variables for top app bar
   
   bool stockRecord=true;
@@ -59,20 +60,20 @@ class _HomePageState extends State<HomePage> {
   List historyList=[
     {
                       'Name':"one week",
-                      'Price':"Cant Buy",
-                      'Discounted Price' :"Use",
-                      'Quantity':"Single ",
-                      'Units':"Single ",
+                      'Price':"20",
+                      'Discounted Price' :"15",
+                      'Quantity':"100",
+                      'Units':"1 ",
                       'Category': "Dont know",
                       'Description':"Too Long",
                       'Date Stamp': (DateTime.now()).subtract(Duration(days: 7)),
                     },
                     {
                       'Name':"one month",
-                      'Price':"Cant Buy",
-                      'Discounted Price' :"Use",
-                      'Quantity':"Single ",
-                      'Units':"Single ",
+                      'Price':"30",
+                      'Discounted Price' :"20",
+                      'Quantity':"100 ",
+                      'Units':"200",
                       'Category': "Dont know",
                       'Description':"Too Long",
                       'Date Stamp': DateTime(now.year,now.month-1,now.day),
@@ -80,10 +81,10 @@ class _HomePageState extends State<HomePage> {
 
                     {
                       'Name':"one year",
-                      'Price':"Cant Buy",
-                      'Discounted Price' :"Use",
-                      'Quantity':"Single ",
-                      'Units':"Single ",
+                      'Price':"100",
+                      'Discounted Price' :"50",
+                      'Quantity':"350",
+                      'Units':"15",
                       'Category': "Dont know",
                       'Description':"Too Long",
                       'Date Stamp': DateTime(now.year-1,now.month,now.day),
@@ -120,7 +121,7 @@ class _HomePageState extends State<HomePage> {
         searchText=searchText.toLowerCase();
         if(data.contains(searchText)){
           searchList.add(inventoryList[i]);
-          print(inventoryList);
+          // print(inventoryList);
 
         }
         
@@ -156,7 +157,7 @@ class _HomePageState extends State<HomePage> {
     //declaring variable for using MediaQuery
     var size=MediaQuery.of(context).size;
     
-    return Scaffold(
+    return size.width < 600 && size.width>350? Scaffold(
       appBar: history?AppBar(
         title: Center(
           child: Text(
@@ -164,7 +165,7 @@ class _HomePageState extends State<HomePage> {
             ),
           actions: [
             
-            
+            // popup menu in order to choose how to filter List
             PopupMenuButton(
               
               icon: Icon(Icons.sort),
@@ -177,8 +178,9 @@ class _HomePageState extends State<HomePage> {
                   );
               });
             },
+            //recieving data from the popup menu
             onSelected: (value) {
-              print(value);
+              // print(value);
               if (value!="None"){
                    setState(() {
                   filterList=[];
@@ -209,6 +211,10 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
+
+//------------------------- code for top app bar starts--------------------------
+
+
                 Container(
                   color: Colors.amber,
                   child: Row(
@@ -291,9 +297,18 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
+            
+//---------------------code for top app bar ends-----------------------------
+
+
+//----------------code for search bar starts-------------------------------------
+
+
               stockRecord? Container(
+                
                   margin: EdgeInsets.all(20),
                   child: CupertinoSearchTextField(
+                    controller: _controller,
                     onSubmitted: (val){
                       searchFunction(val);
                       
@@ -302,15 +317,26 @@ class _HomePageState extends State<HomePage> {
                         
                       });
                     },
+
+                    //resetting the searchlist and _isSearching on tapping cut icon
+
                     onSuffixTap: (){
                       setState(() {
                         _isSearching=false;
+                         _controller.clear();
                         searchList=[];
                       });
                     },
                   ),
                   ):Container(),
 
+
+
+//---------------code for search bar ends------------------------
+
+
+
+//-------------code for Stock Record Page Starts--------------------------
                 stockRecord? Flexible(
                   child: Container(
                     color:Colors.amberAccent,
@@ -319,6 +345,11 @@ class _HomePageState extends State<HomePage> {
                       child:StockRecord(context)
                   ),
                 ): Container(),
+
+//-----------------code for Stock Record Page ends-----------------
+
+////-----------------code for History Page starts-----------------
+
                 history? Flexible(
                   child: Container(
                     
@@ -328,7 +359,11 @@ class _HomePageState extends State<HomePage> {
                       child:History(context)
                   ),
                 ): Container(),
-                
+
+//-----------------code for History Page ends----------------- 
+
+ //------------------- code for Add New Page Starts-----------------------------
+               
                 addnew? Flexible(
                   child: Container(
                     margin: EdgeInsets.only(top: size.height*0.01),
@@ -338,20 +373,21 @@ class _HomePageState extends State<HomePage> {
                       child:AddNew(context)
                   ),
                 ): Container(),
-                  
+
+//-----------------code for AddNew Page ends-----------------------               
               ],
             ),
       ),
-    );
+    ) :Container();
   }
 
+//-----------------code of build function ends--------------------
 
 
 
 
 
-
-
+//---------------------- Heart of stock records page-------------
 
 Widget StockRecord(context){
   var size=MediaQuery.of(context).size;
@@ -360,6 +396,7 @@ Widget StockRecord(context){
         body: !_isSearching? Stack(
           children:[
           inventoryList.length>0?  ListView.builder(
+            shrinkWrap:true,
           itemCount:  inventoryList.length,
           itemBuilder: (context,index){
         return InkWell(
@@ -389,8 +426,8 @@ Widget StockRecord(context){
           },
           child: Container(
         margin: EdgeInsets.only(bottom: size.height*0.02),
-        width: size.width,
-        height: size.height*0.12,
+        width: size.width*0.9,
+        height: size.height*0.16,
         decoration: BoxDecoration(
           color: Colors.black38,
           
@@ -405,12 +442,12 @@ Widget StockRecord(context){
             Row(
               children: [
                 Container(
-                  margin: EdgeInsets.only(top:5,left: 20),
+                  margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.01),
                   child: Text(
                     inventoryList[index]['Name'],
                     
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.06
                     ),
                     ),
                 ),
@@ -418,11 +455,11 @@ Widget StockRecord(context){
                   width: size.width*0.4,
                 ),
                 Container(
-                  margin: EdgeInsets.only(top:5,left: 5),
+                  margin: EdgeInsets.only(top:size.width*0.015,left: size.width*0.01),
                   child: Text(
                     "Stock",
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.05,
                     ),
                     ),
                 ),
@@ -435,11 +472,11 @@ Widget StockRecord(context){
             Row(
               children: [
                 Container(
-                  margin: EdgeInsets.only(top:5,left: 6),
+                  margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.02),
                   child: Text(
                    "Rs." +  inventoryList[index]['Discounted Price'],
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.06,
                     ),
                     ),
                 ),
@@ -447,12 +484,12 @@ Widget StockRecord(context){
                   width: size.width*0.4,
                 ),
                 Container(
-                  margin: EdgeInsets.only(top:5,left: 6),
+                  margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.03),
                   child: Text(
                     // "Stock",
                     inventoryList[index]['Units'],
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.05,
                     ),
                     ),
                 ),
@@ -466,13 +503,16 @@ Widget StockRecord(context){
           }
         ): Container(child: Center(child: Text("Add Items"),),),
 
+
+          //update dialog to appear on long press
+
           update?Dialog(
-            // backgroundColor: Colors.white,
+            
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             child:Container(
                 width: size.width*0.7,
                 height: size.height*0.5,
-                // margin: EdgeInsets.only(top: size.height*0.1),
+                
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -483,14 +523,17 @@ Widget StockRecord(context){
                 ),
                 child:Column(
                   children: [
-                    Text(
-                      // "Update your "+inventoryList[index]['Name']+" stock",
-                      "Update "+ inventoryList[updateIndex]["Name"]+" Stock",
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      ),
+                    Container(
+                      margin:EdgeInsets.all(size.height*0.01),
+                      child: Text(
+                        // "Update your "+inventoryList[index]['Name']+" stock",
+                        "Update "+ inventoryList[updateIndex]["Name"]+" Stock",
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        ),
+                    ),
                       SizedBox(
                         height:size.height*0.02,
                       ),
@@ -563,6 +606,7 @@ Widget StockRecord(context){
                           );
                           setState(() {
                             update=!update;
+                            filter=false;
                           });
                         },
                      ), 
@@ -578,33 +622,11 @@ Widget StockRecord(context){
           Stack(
           children:[
           searchList.length>0?  ListView.builder(
+            shrinkWrap: true,
           itemCount:  searchList.length,
           itemBuilder: (context,index){
         return InkWell(
-        //   onLongPress: (){
-        // setState(() {
-        //   update=!update;
-        //   // print(inventoryList[index]['Name']);
-        //     updateIndex=index;
-        // });
-        //   },
-          
-
-
-          // onTap:(){
-
-          //   setState(() {
-          //     updateIndex=index;
-          //   });
-
-          //   Navigator.push(
-          //     context, 
-          //     MaterialPageRoute(
-          //       builder: (context)=>editPage(context)
-          //       ),
-          //     );
-
-          // },
+        
           child: Container(
         margin: EdgeInsets.only(bottom: size.height*0.02),
         width: size.width,
@@ -623,12 +645,12 @@ Widget StockRecord(context){
             Row(
               children: [
                 Container(
-                  margin: EdgeInsets.only(top:5,left: 20),
+                  margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.02),
                   child: Text(
                     searchList[index]['Name'],
                     
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.05,
                     ),
                     ),
                 ),
@@ -636,11 +658,11 @@ Widget StockRecord(context){
                   width: size.width*0.4,
                 ),
                 Container(
-                  margin: EdgeInsets.only(top:5,left: 5),
+                  margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.02),
                   child: Text(
                     "Stock",
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.05,
                     ),
                     ),
                 ),
@@ -657,7 +679,7 @@ Widget StockRecord(context){
                   child: Text(
                    "Rs." +  searchList[index]['Discounted Price'],
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.05,
                     ),
                     ),
                 ),
@@ -670,11 +692,11 @@ Widget StockRecord(context){
                     // "Stock",
                     searchList[index]['Units'],
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: size.width*0.05,
                     ),
                     ),
                 ),
-                // Text((inventoryList[index]['Date Stamp']).toString()),
+                
               ],
             ),
           ],
@@ -805,7 +827,7 @@ Widget StockRecord(context){
 
 
 
-
+//-------------------// Heart of history Page------------------
 
 
 Widget History(context){
@@ -816,18 +838,19 @@ Widget History(context){
 
             
           child:  historyList.length>0 ? ListView.builder(
+            shrinkWrap: true,
               itemCount: historyList.length,
               itemBuilder: (context,index){
 
                 return Container(
                   width:size.width*0.2,
-                  height: size.height*0.15,
+                  height: size.height*0.2,
                   decoration: BoxDecoration(
                     color: Colors.black38,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(size.width*0.09),
                     
                   ),
-                  margin:EdgeInsets.only(top: 20,bottom:20),
+                  margin:EdgeInsets.only(top: size.height*0.01,bottom:size.height*0.01),
                   child: Column(
                     children: [
                       Row(
@@ -837,8 +860,8 @@ Widget History(context){
                             child: Text(
                               historyList[index]['Name'],
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 40,
+                                fontWeight: FontWeight.w400,
+                                fontSize: size.width*0.09,
                               ),
 
                             ),
@@ -854,23 +877,23 @@ Widget History(context){
                           Row(
                             children:[
                               Container(
-                            margin: EdgeInsets.only(top:2,left: size.width*0.05),
+                            margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.05),
                             child: Text(
                               "Units",
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 30,
+                                fontWeight: FontWeight.w400,
+                                fontSize: size.width*0.05,
                               ),
 
                             ),
                           ),
                           Container(
-                            margin: EdgeInsets.only(top:10,left: size.width*0.5),
+                            margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.5),
                             child: Text(
                               historyList[index]['Units'],
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 30,
+                                fontWeight: FontWeight.w400,
+                                fontSize: size.width*0.05,
                               ),
 
                             ),
@@ -881,13 +904,13 @@ Widget History(context){
                       Row(
                         children: [
                           Container(
-                            margin: EdgeInsets.only(top:2,left: size.width*0.04),
+                            margin: EdgeInsets.only(top:size.height*0.02,left: size.width*0.04),
                             child: Text(
                               "Updated On  "+ historyList[index]['Date Stamp'].toString(),
                               // "uPdated",
                               style: TextStyle(
                                 // fontWeight: FontWeight.bold,
-                                fontSize: 20,
+                                fontSize: size.width*0.04,
                               ),
 
                             ),
@@ -911,12 +934,13 @@ Widget History(context){
 
   ):
 
-
+//--------------history to display when filter=true -----------------
 
   Container(
 
             
           child:  historyList.length>0 ? ListView.builder(
+            shrinkWrap: true,
               itemCount: filterList.length,
               itemBuilder: (context,index){
 
@@ -928,18 +952,18 @@ Widget History(context){
                     borderRadius: BorderRadius.circular(30),
                     
                   ),
-                  margin:EdgeInsets.only(top: 20,bottom:20),
+                  margin:EdgeInsets.only(top: size.height*0.01,bottom:size.height*0.03),
                   child: Column(
                     children: [
                       Row(
                         children: [
                           Container(
-                            margin: EdgeInsets.only(top:10,left: 30),
+                            margin: EdgeInsets.only(top:size.height*0.02,left: size.width*0.02),
                             child: Text(
                               filterList[index]['Name'],
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 40,
+                                fontSize: size.width*0.05,
                               ),
 
                             ),
@@ -955,23 +979,23 @@ Widget History(context){
                           Row(
                             children:[
                               Container(
-                            margin: EdgeInsets.only(top:2,left: size.width*0.05),
+                            margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.01),
                             child: Text(
                               "Units",
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 30,
+                                fontWeight: FontWeight.w400,
+                                fontSize: size.width*0.05,
                               ),
 
                             ),
                           ),
                           Container(
-                            margin: EdgeInsets.only(top:10,left: size.width*0.5),
+                            margin: EdgeInsets.only(top:size.height*0.02,left: size.width*0.5),
                             child: Text(
                               filterList[index]['Units'],
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 30,
+                                fontWeight: FontWeight.w400,
+                                fontSize: size.width*0.05,
                               ),
 
                             ),
@@ -982,13 +1006,13 @@ Widget History(context){
                       Row(
                         children: [
                           Container(
-                            margin: EdgeInsets.only(top:2,left: size.width*0.04),
+                            margin: EdgeInsets.only(top:size.height*0.01,left: size.width*0.04),
                             child: Text(
                               "Updated On  "+ filterList[index]['Date Stamp'].toString(),
                               // "uPdated",
                               style: TextStyle(
                                 // fontWeight: FontWeight.bold,
-                                fontSize: 20,
+                                fontSize: size.width*0.04,
                               ),
 
                             ),
@@ -1032,7 +1056,7 @@ Widget History(context){
 
 
 
-
+//-------------code for adding new item starts------------------------------
 
 Widget AddNew(context){
   var size =MediaQuery.of(context).size;
@@ -1042,18 +1066,21 @@ Widget AddNew(context){
           margin: EdgeInsets.all(20),
           child: Column(
             children: [
-              TextField(
-                // apple
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: "Item name",
-                  
+              Container(
+                width: size.width*0.9,
+                child: TextField(
+                  // apple
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Item name",
+                    
+                  ),
+                  onChanged: (val){
+                    setState(() {
+                      name=val;
+                    });
+                  },
                 ),
-                onChanged: (val){
-                  setState(() {
-                    name=val;
-                  });
-                },
               ),
               SizedBox(
                      height: size.height*0.02,
@@ -1078,7 +1105,7 @@ Widget AddNew(context){
                       ),
                    ),
                    SizedBox(
-                     width: size.width*0.1,
+                     width: size.width*0.07,
                    ),
                    Container(
                      width: size.width*0.4,
@@ -1124,7 +1151,7 @@ Widget AddNew(context){
                       ),
                    ),
                    SizedBox(
-                     width: size.width*0.1,
+                     width: size.width*0.07,
                    ),
                    Container(
                      width: size.width*0.4,
@@ -1184,11 +1211,13 @@ Widget AddNew(context){
 
               InkWell(
                 onTap: (){
-                  // print(myController.text);
+                  
+
+// what to do when submit "Add New " button is pressed 
+
+
                   if (name.length>0 && price.length>0 && quantity.length>0 && stockUnits.length>0 && category.length>0){
-                  // var date=((DateTime.now().toIso8601String()).split("T"))[0];
-                  // var date=DateTime.now();
-                  // date=date.toString();
+                  
                    setState(() {
                      filter=false;
                   inventoryList.add(
@@ -1203,7 +1232,7 @@ Widget AddNew(context){
                       
                     }
                   );
-                  //  name.length>0 && price.length>0 && quantity.length>0 && stockUnits.length>0 && category.length>0 ? 
+                  
                    historyList.add(
                     {
                       'Name':name,
@@ -1214,18 +1243,22 @@ Widget AddNew(context){
                       'Category': category,
                       'Description':description,
                       'Date Stamp': DateTime.now(),
-                    })/*:Container()*/;
-
-                  // name.length>0 && price.length>0 && quantity.length>0 && stockUnits.length>0 && category.length>0?
+                    });
                   
                     addnew=!addnew;
                     stockRecord=!stockRecord;
-                  })/*:Container()*/;
+                  });
 
                   }else{
+
+                // function call when "Add new"  form is Incomplete
+
                     noData();
-                                     // print(inventoryList[0]['name']);
+                                     
                 }},
+
+                // Add new button
+
                 child: Container(
                   width: size.width*0.5,
                   height: size.height*0.07,
@@ -1251,6 +1284,8 @@ Widget AddNew(context){
   );
 }
 
+// function which tells what to do when the "Add New" form is Incomplete
+
 noData(){
   return showDialog(
     context: context,
@@ -1268,6 +1303,9 @@ noData(){
       );
 }
 
+
+// this is the "edit page" , app routes to this page when 
+//an item from the 
 
 Widget editPage(context){
   var size =MediaQuery.of(context).size;
@@ -1316,7 +1354,7 @@ Widget editPage(context){
                       ),
                    ),
                    SizedBox(
-                     width: size.width*0.1,
+                     width: size.width*0.07,
                    ),
                    Container(
                      width: size.width*0.4,
@@ -1362,7 +1400,7 @@ Widget editPage(context){
                       ),
                    ),
                    SizedBox(
-                     width: size.width*0.1,
+                     width: size.width*0.07,
                    ),
                    Container(
                      width: size.width*0.4,
@@ -1422,10 +1460,14 @@ Widget editPage(context){
 
               InkWell(
                 onTap: (){
-                  var date=((DateTime.now().toIso8601String()).split("T"))[0];
-                  date=date.toString();
+                  // var date=((DateTime.now().toIso8601String()).split("T"))[0];
+                  // date=date.toString();
 
                   setState(() {
+
+                    filter=false;
+
+
                     name.length>0 ? inventoryList[updateIndex]['Name']=name:null;
                   price.length>0 ?  inventoryList[updateIndex]['Price']=price: null;
                   discountedPrice.length>0 ? inventoryList[updateIndex]['Discounted Price']=discountedPrice : null;
@@ -1445,7 +1487,7 @@ Widget editPage(context){
                       'Units':stockUnits.length>0 ? stockUnits: inventoryList[updateIndex]['Units'],
                       'Category': category.length>0 ? category:  inventoryList[updateIndex]['Category'],
                       'Description':description.length>0 ? description:  inventoryList[updateIndex]['Description'],
-                      'Date Stamp': date,
+                      'Date Stamp': DateTime.now(),
                     });
                     
                   });
